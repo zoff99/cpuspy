@@ -1,61 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/ui_state_row"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    >
+    android:orientation="vertical"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp">
 
     <LinearLayout
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        >
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp">
 
+        <!-- 0dp width with weight=1 is the correct way to make a flexible column -->
         <TextView
             android:id="@+id/ui_freq_text"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textSize="17dp"
-            android:textColor="#ffffff"
             android:layout_weight="1"
-            android:layout_marginRight="5dp"
-            />
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/ui_duration_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="right"
-            android:layout_weight="1"
-            android:layout_marginRight="5dp"
-            />
+            android:gravity="end"
+            android:textColor="#E0E0E0"
+            android:textSize="16sp"
+            android:layout_marginEnd="16dp" />
 
         <TextView
             android:id="@+id/ui_percentage_text"
-            android:layout_width="70dp"
+            android:layout_width="60dp"
             android:layout_height="wrap_content"
-            android:gravity="right"
-            android:layout_weight="0"
-            android:layout_marginRight="5dp"
-            />
+            android:gravity="end"
+            android:textColor="#90CAF9"
+            android:textSize="16sp"
+            android:textStyle="bold" />
 
     </LinearLayout>
 
+    <!-- Accessible Blue Progress Bar (Easier to see for colorblind users than green/red) -->
     <ProgressBar
         android:id="@+id/ui_bar"
-        android:layout_width="fill_parent"
-        android:layout_height="10dp"
         style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="12dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:max="100"
-        />
+        android:progressTint="#42A5F5"
+        android:progressBackgroundTint="#333333" />
 
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="1px"
-        android:layout_marginTop="5dp"
-        android:background="#444"
-        />
+    <!-- Clean 1dp Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="8dp"
+        android:background="#333333" />
 
 </LinearLayout>

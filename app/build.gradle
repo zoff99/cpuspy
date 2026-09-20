@@ -53,3 +53,8 @@ android {
 dependencies {
     // The app uses only standard Android SDK views and APIs; no external dependencies are required.
 }
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}

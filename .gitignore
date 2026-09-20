@@ -1,9 +1,11 @@
-# ignore binaries
-bin/*
-gen/*
+*.iml
+/.idea
+.gradle/
+/app/.gradle
+/app/.idea
+/app/local.properties
+/app/.idea/workspace.xml
+/app/.idea/libraries
+/app/build
+/app/captures
 
-# maven output
-target/*
-
-# local stuff
-local.properties

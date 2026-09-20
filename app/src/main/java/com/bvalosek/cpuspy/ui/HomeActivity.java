@@ -13,6 +13,7 @@ import java.util.List;
 import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -59,8 +60,7 @@ public class HomeActivity extends Activity
         findViews();
 
         // set title to version string
-        setTitle(getResources().getText(R.string.app_name) + " v" +
-        getResources().getText(R.string.version_name));
+        setTitle(getResources().getText(R.string.app_name) + " v" + BuildConfig.VERSION_NAME);
 
         // see if we're updating data during a config change (rotate screen)
         if (savedInstanceState != null) {

@@ -17,3 +17,4 @@
 .idea/codeStyles/Project.xml
 .idea/caches/build_file_checksums.ser
 .idea/
+/app/lint-report*

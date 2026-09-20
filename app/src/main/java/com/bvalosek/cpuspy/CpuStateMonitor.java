@@ -14,10 +14,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Comparator;
 
 import android.os.SystemClock;
 
@@ -34,7 +34,7 @@ public class CpuStateMonitor {
     private static final String TAG = "CpuStateMonitor";
 
     private List<CpuState>      _states = new ArrayList<CpuState>();
-    private Map<Integer, Long>  _offsets = new HashMap<Integer, Long>();
+    private Map<Long, Long>     _offsets = new HashMap<Long, Long>(); // Changed to Long
 
     /** exception class */
     public class CpuStateMonitorException extends Exception {
@@ -48,15 +48,15 @@ public class CpuStateMonitor {
      */
     public class CpuState implements Comparable<CpuState> {
         /** init with freq and duration */
-        public CpuState(int a, long b) { freq = a; duration = b; }
+        public CpuState(long a, long b) { freq = a; duration = b; } // Changed to long
 
-        public int freq = 0;
+        public long freq = 0; // Changed to long
         public long duration = 0;
 
         /** for sorting, compare the freqs */
         public int compareTo(CpuState state) {
-            Integer a = new Integer(freq);
-            Integer b = new Integer(state.freq);
+            Long a = freq;
+            Long b = state.freq;
             return a.compareTo(b);
         }
     }
@@ -99,7 +99,7 @@ public class CpuStateMonitor {
             sum += state.duration;
         }
 
-        for (Map.Entry<Integer, Long> entry : _offsets.entrySet()) {
+        for (Map.Entry<Long, Long> entry : _offsets.entrySet()) { // Changed to Long
             offset += entry.getValue();
         }
 
@@ -109,12 +109,12 @@ public class CpuStateMonitor {
     /**
      * @return Map of freq->duration of all the offsets
      */
-    public Map<Integer, Long> getOffsets() {
+    public Map<Long, Long> getOffsets() { // Changed to Long
         return _offsets;
     }
 
     /** Sets the offset map (freq->duration offset) */
-    public void setOffsets(Map<Integer, Long> offsets) {
+    public void setOffsets(Map<Long, Long> offsets) { // Changed to Long
         _offsets = offsets;
     }
 
@@ -166,7 +166,7 @@ public class CpuStateMonitor {
         Collections.sort(_states, new Comparator<CpuState>() {
             @Override
             public int compare(CpuState s1, CpuState s2) {
-                // Deep sleep always goes to the very top
+                // Deep sleep always at the very top
                 if (s1.freq == 0 && s2.freq != 0) {
                     return -1;
                 }
@@ -175,7 +175,7 @@ public class CpuStateMonitor {
                 }
 
                 // Ascending order for the rest (Lowest MHz at top, Highest MHz at bottom)
-                return Integer.compare(s1.freq, s2.freq);
+                return Long.compare(s1.freq, s2.freq); // Changed to Long.compare
             }
         });
 
@@ -190,10 +190,10 @@ public class CpuStateMonitor {
         try {
             String line;
             while ((line = br.readLine()) != null) {
-                // split open line and convert to Integers
+                // split open line and convert to Longs
                 String[] nums = line.split(" ");
                 _states.add(new CpuState(
-                        Integer.parseInt(nums[0]),
+                        Long.parseLong(nums[0]), // Changed to Long.parseLong
                         Long.parseLong(nums[1])));
             }
         } catch (IOException e) {

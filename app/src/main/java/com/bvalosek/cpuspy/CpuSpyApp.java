@@ -71,11 +71,11 @@ public class CpuSpyApp extends Application {
         }
 
         // split the string by peroids and then the info by commas and load
-        Map<Integer, Long> offsets = new HashMap<Integer, Long>();
+        Map<Long, Long> offsets = new HashMap<Long, Long>(); // Changed to Long
         String[] sOffsets = prefs.split(",");
         for (String offset : sOffsets) {
             String[] parts = offset.split(" ");
-            offsets.put (Integer.parseInt(parts[0]),
+            offsets.put (Long.parseLong(parts[0]), // Changed to Long.parseLong
                          Long.parseLong(parts[1]));
         }
 
@@ -93,7 +93,7 @@ public class CpuSpyApp extends Application {
 
         // build the string by iterating over the freq->duration map
         String str = "";
-        for (Map.Entry<Integer, Long> entry :
+        for (Map.Entry<Long, Long> entry :
                 _monitor.getOffsets().entrySet()) {
             str += entry.getKey() + " " + entry.getValue() + ",";
         }

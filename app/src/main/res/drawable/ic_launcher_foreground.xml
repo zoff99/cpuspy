@@ -1,0 +1,21 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- CPU Pins -->
+    <path android:fillColor="#90CAF9" android:pathData="M46,26h4v8h-4z M58,26h4v8h-4z M46,74h4v8h-4z M58,74h4v8h-4z M26,46h8v4h-8z M26,58h8v4h-8z M74,46h8v4h-8z M74,58h8v4h-8z"/>
+
+    <!-- Chip Body -->
+    <path android:fillColor="#FFFFFF" android:pathData="M38,38h32v32h-32z"/>
+
+    <!-- Frequency Wave (Matches your app's blue progress bars) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#1E88E5"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M42,54h4l3,-8l6,16l3,-8h4"/>
+</vector>

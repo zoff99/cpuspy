@@ -107,31 +107,31 @@ public class HomeActivity extends Activity
 
     /** called to handle a menu event */
     @Override public boolean onOptionsItemSelected(MenuItem item) {
-        // what it do mayne
-        switch (item.getItemId()) {
-        /* pressed the load menu button */
-        case R.id.menu_refresh:
+        int itemId = item.getItemId();
+
+        if (itemId == R.id.menu_refresh) {
             refreshData();
-            break;
-        case R.id.menu_reset:
+            return true;
+        }
+        else if (itemId == R.id.menu_reset) {
             try {
                 _app.getCpuStateMonitor().setOffsets();
             } catch (CpuStateMonitorException e) {
                 // TODO: something
             }
-
             _app.saveOffsets();
             updateView();
-            break;
-        case R.id.menu_restore:
+            return true;
+        }
+        else if (itemId == R.id.menu_restore) {
             _app.getCpuStateMonitor().removeOffsets();
             _app.saveOffsets();
             updateView();
-            break;
+            return true;
         }
 
-        // made it
-        return true;
+        // If we didn't handle it, let the superclass handle it
+        return super.onOptionsItemSelected(item);
     }
 
     /** Generate and update all UI elements */

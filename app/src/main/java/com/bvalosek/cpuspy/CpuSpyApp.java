@@ -42,6 +42,7 @@ public class CpuSpyApp extends Application {
      * current kernel version string
      */
     @Override public void onCreate(){
+        super.onCreate();
         loadOffsets();
         updateKernelVersion();
     }

@@ -10,7 +10,7 @@ as well as the current kernel information.
 
 ### Automated Screenshots
 
-<img src="https://github.com/zoff99/cpuspy/releases/download/nightly/info_screen01_31.png" height="300"></a>
+<img src="https://github.com/zoff99/cpuspy/releases/download/nightly/info_screen01_33.png" height="300"></a>
 
 ### information of previous maintainers
 

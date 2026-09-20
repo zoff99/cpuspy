@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -161,7 +162,22 @@ public class CpuStateMonitor {
                 - SystemClock.uptimeMillis()) / 10;
         _states.add(new CpuState(0, sleepTime));
 
-        Collections.sort(_states, Collections.reverseOrder());
+        // Sort with custom comparator: Deep sleep (0) at top, then lowest to highest frequency
+        Collections.sort(_states, new Comparator<CpuState>() {
+            @Override
+            public int compare(CpuState s1, CpuState s2) {
+                // Deep sleep always goes to the very top
+                if (s1.freq == 0 && s2.freq != 0) {
+                    return -1;
+                }
+                if (s2.freq == 0 && s1.freq != 0) {
+                    return 1;
+                }
+
+                // Ascending order for the rest (Lowest MHz at top, Highest MHz at bottom)
+                return Integer.compare(s1.freq, s2.freq);
+            }
+        });
 
         return _states;
     }

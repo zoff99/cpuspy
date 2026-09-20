@@ -34,7 +34,7 @@
                 android:padding="6dp"
                 android:text="No states file found. Are you sure your phone is compatible?\n\nIf you are running a custom ROM or kernel, try contacting its developer to inform him that the states file is not readable."
                 android:textColor="#FFCDD2"
-                android:textSize="12sp"
+                android:textSize="14sp"
                 android:textStyle="bold"
                 android:visibility="gone" />
 
@@ -50,7 +50,7 @@
                 android:layout_height="wrap_content"
                 android:padding="4dp"
                 android:textColor="#E0E0E0"
-                android:textSize="12sp"
+                android:textSize="14sp"
                 android:visibility="gone" />
 
             <TextView
@@ -65,7 +65,7 @@
                 android:gravity="center_horizontal"
                 android:padding="6dp"
                 android:textColor="#FFFFFF"
-                android:textSize="18sp"
+                android:textSize="22sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -78,7 +78,7 @@
                 android:layout_height="wrap_content"
                 android:padding="4dp"
                 android:textColor="#E0E0E0"
-                android:textSize="12sp" />
+                android:textSize="14sp" />
 
         </LinearLayout>
     </ScrollView>

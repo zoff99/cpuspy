@@ -9,23 +9,24 @@ package com.bvalosek.cpuspy;
 // imports
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Comparator;
 
 import android.os.SystemClock;
+import android.util.Log;
 
 /**
  * CpuStateMonitor is a class responsible for querying the system and getting
  * the time-in-state information, as well as allowing the user to set/reset
  * offsets to "restart" the state timers
  */
+/** @noinspection SpellCheckingInspection*/
 public class CpuStateMonitor {
 
     public static final String TIME_IN_STATE_PATH =
@@ -33,8 +34,11 @@ public class CpuStateMonitor {
 
     private static final String TAG = "CpuStateMonitor";
 
+    // Implausible frequency threshold: 100 GHz (100,000,000,000 Hz)
+    private static final long MAX_FREQ = 100000000000L;
+
     private List<CpuState>      _states = new ArrayList<CpuState>();
-    private Map<Long, Long>     _offsets = new HashMap<Long, Long>(); // Changed to Long
+    private Map<Long, Long>     _offsets = new HashMap<Long, Long>();
 
     /** exception class */
     public class CpuStateMonitorException extends Exception {
@@ -47,41 +51,42 @@ public class CpuStateMonitor {
      * simple struct for states/time
      */
     public class CpuState implements Comparable<CpuState> {
-        /** init with freq and duration */
-        public CpuState(long a, long b) { freq = a; duration = b; } // Changed to long
+        public CpuState(long a, long b) { freq = a; duration = b; }
 
-        public long freq = 0; // Changed to long
+        public long freq = 0;
         public long duration = 0;
 
         /** for sorting, compare the freqs */
         public int compareTo(CpuState state) {
-            Long a = freq;
-            Long b = state.freq;
-            return a.compareTo(b);
+            try {
+                Long a = freq;
+                Long b = state.freq;
+                return a.compareTo(b);
+            } catch (Exception e) {
+                return 0;
+            }
         }
     }
 
     /** @return List of CpuState with the offsets applied */
     public List<CpuState> getStates() {
         List<CpuState> states = new ArrayList<CpuState>();
-
-        /* check for an existing offset, and if it's not too big, subtract it
-         * from the duration, otherwise just add it to the return List */
-        for (CpuState state : _states) {
-            long duration = state.duration;
-            if (_offsets.containsKey(state.freq)) {
-                long offset = _offsets.get(state.freq);
-                if (offset <= duration) {
-                    duration -= offset;
-                } else {
-                    /* offset > duration implies our offsets are now invalid,
-                     * so clear and recall this function */
-                    _offsets.clear();
-                    return getStates();
+        try {
+            for (CpuState state : _states) {
+                long duration = state.duration;
+                if (_offsets.containsKey(state.freq)) {
+                    long offset = _offsets.get(state.freq);
+                    if (offset <= duration) {
+                        duration -= offset;
+                    } else {
+                        _offsets.clear();
+                        return getStates();
+                    }
                 }
+                states.add(new CpuState(state.freq, duration));
             }
-
-            states.add(new CpuState(state.freq, duration));
+        } catch (Exception e) {
+            Log.e(TAG, "Error in getStates", e);
         }
 
         return states;
@@ -92,30 +97,38 @@ public class CpuStateMonitor {
      * for offsets
      */
     public long getTotalStateTime() {
-        long sum = 0;
-        long offset = 0;
+        try {
+            long sum = 0;
+            long offset = 0;
 
-        for (CpuState state : _states) {
-            sum += state.duration;
+            for (CpuState state : _states) {
+                sum += state.duration;
+            }
+
+            for (Map.Entry<Long, Long> entry : _offsets.entrySet()) {
+                offset += entry.getValue();
+            }
+
+            return sum - offset;
+        } catch (Exception e) {
+            Log.e(TAG, "Error in getTotalStateTime", e);
+            return 0;
         }
-
-        for (Map.Entry<Long, Long> entry : _offsets.entrySet()) { // Changed to Long
-            offset += entry.getValue();
-        }
-
-        return sum - offset;
     }
 
     /**
      * @return Map of freq->duration of all the offsets
      */
-    public Map<Long, Long> getOffsets() { // Changed to Long
+    public Map<Long, Long> getOffsets() {
         return _offsets;
     }
 
-    /** Sets the offset map (freq->duration offset) */
-    public void setOffsets(Map<Long, Long> offsets) { // Changed to Long
-        _offsets = offsets;
+    public void setOffsets(Map<Long, Long> offsets) {
+        try {
+            _offsets = offsets;
+        } catch (Exception e) {
+            Log.e(TAG, "Error in setOffsets", e);
+        }
     }
 
     /**
@@ -123,17 +136,26 @@ public class CpuStateMonitor {
      * current duration, effectively "zeroing out" the timers
      */
     public void setOffsets() throws CpuStateMonitorException {
-        _offsets.clear();
-        updateStates();
+        try {
+            _offsets.clear();
+            updateStates();
 
-        for (CpuState state : _states) {
-            _offsets.put(state.freq, state.duration);
+            for (CpuState state : _states) {
+                _offsets.put(state.freq, state.duration);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error in setOffsets", e);
+            throw new CpuStateMonitorException("Error setting offsets");
         }
     }
 
     /** removes state offsets */
     public void removeOffsets() {
-        _offsets.clear();
+        try {
+            _offsets.clear();
+        } catch (Exception e) {
+            Log.e(TAG, "Error in removeOffsets", e);
+        }
     }
 
     /**
@@ -141,9 +163,7 @@ public class CpuStateMonitor {
      * both a frequency and a duration (time spent in that state
      */
     public List<CpuState> updateStates()
-        throws CpuStateMonitorException {
-        /* attempt to create a buffered reader to the time in state
-         * file and read in the states to the class */
+            throws CpuStateMonitorException {
         try {
             InputStream is = new FileInputStream(TIME_IN_STATE_PATH);
             InputStreamReader ir = new InputStreamReader(is);
@@ -151,33 +171,31 @@ public class CpuStateMonitor {
             _states.clear();
             readInStates(br);
             is.close();
-        } catch (IOException e) {
-            throw new CpuStateMonitorException(
-                    "Problem opening time-in-states file");
+        } catch (Exception e) {
+            Log.e(TAG, "Problem opening time-in-states file", e);
+            throw new CpuStateMonitorException("Problem opening time-in-states file");
         }
 
-        /* deep sleep time determined by difference between elapsed
-         * (total) boot time and the system uptime (awake) */
-        long sleepTime = (SystemClock.elapsedRealtime()
-                - SystemClock.uptimeMillis()) / 10;
-        _states.add(new CpuState(0, sleepTime));
+        try {
+            long sleepTime = (SystemClock.elapsedRealtime()
+                              - SystemClock.uptimeMillis()) / 10;
+            _states.add(new CpuState(0, sleepTime));
 
-        // Sort with custom comparator: Deep sleep (0) at top, then lowest to highest frequency
-        Collections.sort(_states, new Comparator<CpuState>() {
-            @Override
-            public int compare(CpuState s1, CpuState s2) {
-                // Deep sleep always at the very top
-                if (s1.freq == 0 && s2.freq != 0) {
-                    return -1;
+            Collections.sort(_states, new Comparator<CpuState>() {
+                @Override
+                public int compare(CpuState s1, CpuState s2) {
+                    try {
+                        if (s1.freq == 0 && s2.freq != 0) return -1;
+                        if (s2.freq == 0 && s1.freq != 0) return 1;
+                        return Long.compare(s1.freq, s2.freq);
+                    } catch (Exception e) {
+                        return 0;
+                    }
                 }
-                if (s2.freq == 0 && s1.freq != 0) {
-                    return 1;
-                }
-
-                // Ascending order for the rest (Lowest MHz at top, Highest MHz at bottom)
-                return Long.compare(s1.freq, s2.freq); // Changed to Long.compare
-            }
-        });
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "Error sorting states", e);
+        }
 
         return _states;
     }
@@ -186,19 +204,31 @@ public class CpuStateMonitor {
      * States member field
      */
     private void readInStates(BufferedReader br)
-        throws CpuStateMonitorException {
+            throws CpuStateMonitorException {
         try {
             String line;
             while ((line = br.readLine()) != null) {
-                // split open line and convert to Longs
-                String[] nums = line.split(" ");
-                _states.add(new CpuState(
-                        Long.parseLong(nums[0]), // Changed to Long.parseLong
-                        Long.parseLong(nums[1])));
+                try {
+                    String[] nums = line.split(" ");
+                    if (nums.length >= 2) {
+                        long freq = Long.parseLong(nums[0].trim());
+                        long duration = Long.parseLong(nums[1].trim());
+
+                        // DISREGARD IMPLAUSIBLE VALUES
+                        if (freq < 0 || freq > MAX_FREQ || duration < 0) {
+                            continue;
+                        }
+
+                        _states.add(new CpuState(freq, duration));
+                    }
+                } catch (Exception e) {
+                    // Skip this line if it's malformed or implausible
+                    Log.w(TAG, "Skipping malformed line: " + line, e);
+                }
             }
-        } catch (IOException e) {
-            throw new CpuStateMonitorException(
-                    "Problem processing time-in-states file");
+        } catch (Exception e) {
+            Log.e(TAG, "Problem processing time-in-states file", e);
+            throw new CpuStateMonitorException("Problem processing time-in-states file");
         }
     }
 }

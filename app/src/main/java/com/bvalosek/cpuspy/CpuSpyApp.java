@@ -9,7 +9,6 @@ package com.bvalosek.cpuspy;
 // imports
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
@@ -43,8 +42,16 @@ public class CpuSpyApp extends Application {
      */
     @Override public void onCreate(){
         super.onCreate();
-        loadOffsets();
-        updateKernelVersion();
+        try {
+            loadOffsets();
+        } catch (Exception e) {
+            Log.e(TAG, "Error loading offsets", e);
+        }
+        try {
+            updateKernelVersion();
+        } catch (Exception e) {
+            Log.e(TAG, "Error updating kernel version", e);
+        }
     }
 
     /** @return the kernel version string */
@@ -62,24 +69,38 @@ public class CpuSpyApp extends Application {
      * the state monitor
      */
     public void loadOffsets() {
-        SharedPreferences settings = getSharedPreferences(
-                PREF_NAME, MODE_PRIVATE);
-        String prefs = settings.getString (PREF_OFFSETS, "");
+        try {
+            SharedPreferences settings = getSharedPreferences(
+                    PREF_NAME, MODE_PRIVATE);
+            String prefs = settings.getString (PREF_OFFSETS, "");
 
-        if (prefs == null || prefs.length() < 1) {
-            return;
+            if (prefs == null || prefs.length() < 1) {
+                return;
+            }
+
+            Map<Long, Long> offsets = new HashMap<Long, Long>();
+            String[] sOffsets = prefs.split(",");
+            for (String offset : sOffsets) {
+                try {
+                    String[] parts = offset.split(" ");
+                    if (parts.length >= 2) {
+                        long freq = Long.parseLong(parts[0].trim());
+                        long duration = Long.parseLong(parts[1].trim());
+
+                        // Disregard implausible saved values
+                        if (freq >= 0 && duration >= 0) {
+                            offsets.put(freq, duration);
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.w(TAG, "Skipping malformed offset: " + offset, e);
+                }
+            }
+
+            _monitor.setOffsets(offsets);
+        } catch (Exception e) {
+            Log.e(TAG, "Error loading offsets", e);
         }
-
-        // split the string by peroids and then the info by commas and load
-        Map<Long, Long> offsets = new HashMap<Long, Long>(); // Changed to Long
-        String[] sOffsets = prefs.split(",");
-        for (String offset : sOffsets) {
-            String[] parts = offset.split(" ");
-            offsets.put (Long.parseLong(parts[0]), // Changed to Long.parseLong
-                         Long.parseLong(parts[1]));
-        }
-
-        _monitor.setOffsets(offsets);
     }
 
     /**
@@ -87,19 +108,22 @@ public class CpuSpyApp extends Application {
      * e.g. "100 24, 200 251, 500 124 etc
      */
     public void saveOffsets() {
-        SharedPreferences settings = getSharedPreferences(
-                PREF_NAME, MODE_PRIVATE);
-        SharedPreferences.Editor editor = settings.edit();
+        try {
+            SharedPreferences settings = getSharedPreferences(
+                    PREF_NAME, MODE_PRIVATE);
+            SharedPreferences.Editor editor = settings.edit();
 
-        // build the string by iterating over the freq->duration map
-        String str = "";
-        for (Map.Entry<Long, Long> entry :
-                _monitor.getOffsets().entrySet()) {
-            str += entry.getKey() + " " + entry.getValue() + ",";
+            String str = "";
+            for (Map.Entry<Long, Long> entry :
+                    _monitor.getOffsets().entrySet()) {
+                str += entry.getKey() + " " + entry.getValue() + ",";
+            }
+
+            editor.putString(PREF_OFFSETS, str);
+            editor.commit();
+        } catch (Exception e) {
+            Log.e(TAG, "Error saving offsets", e);
         }
-
-        editor.putString(PREF_OFFSETS, str);
-        editor.commit();
     }
 
     /** Try to read the kernel version string from the proc fileystem */
@@ -115,8 +139,8 @@ public class CpuSpyApp extends Application {
             }
 
             is.close();
-        } catch (IOException e) {
-            Log.e(TAG, "Problem reading kernel version file");
+        } catch (Exception e) {
+            Log.e(TAG, "Problem reading kernel version file", e);
             return "";
         }
 
